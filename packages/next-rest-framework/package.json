@@ -1,20 +1,16 @@
 {
-  "name": "next-rest-framework",
-  "version": "6.0.6",
-  "description": "Next REST Framework - Type-safe, self-documenting APIs for Next.js",
+  "name": "next-rest-framework-patch-hugo",
+  "version": "6.0.8",
+  "description": "A patch for Next REST Framework to work with Next.JS 15",
   "keywords": [
     "nextjs",
     "rest",
     "api",
     "next-rest-framework"
   ],
-  "homepage": "https://next-rest-framework.vercel.app",
-  "bugs": {
-    "url": "https://github.com/blomqma/next-rest-framework/issues",
-    "email": "blomqma@omg.lol"
-  },
+  "homepage": "https://github.com/Hugo-Persson/next-rest-framework-patch",
   "license": "ISC",
-  "author": "Markus Blomqvist <blomqma@omg.lol>",
+  "author": "Hugo Persson",
   "files": [
     "dist"
   ],
@@ -23,7 +19,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/blomqma/next-rest-framework.git",
+    "url": "https://github.com/Hugo-Persson/next-rest-framework-patch",
     "directory": "packages/next-rest-framework"
   },
   "scripts": {
