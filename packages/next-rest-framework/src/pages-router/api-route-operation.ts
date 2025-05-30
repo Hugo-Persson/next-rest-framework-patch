@@ -15,7 +15,8 @@ import {
   type ZodFormSchema,
   type ContentTypesThatSupportInputValidation,
   type FormDataContentType,
-  type BaseParams
+  type BaseParams,
+  type BaseHeaders
 } from '../types';
 import { type NextApiRequest, type NextApiResponse } from 'next/types';
 import { type ZodSchema, type z } from 'zod';
@@ -125,7 +126,8 @@ interface InputObject<
   ContentType = BaseContentType,
   Body = unknown,
   Query = BaseQuery,
-  Params = BaseParams
+  Params = BaseParams,
+  Headers = BaseHeaders
 > {
   contentType?: ContentType;
   /*!
@@ -145,6 +147,8 @@ interface InputObject<
   params?: ZodSchema<Params>;
   /*! If defined, this will override the params schema for the OpenAPI spec. */
   paramsSchema?: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject;
+
+  headers?: ZodSchema<Headers>;
 }
 
 export interface ApiRouteOperationDefinition<

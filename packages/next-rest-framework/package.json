@@ -1,6 +1,6 @@
 {
   "name": "next-rest-framework-patch-hugo",
-  "version": "6.0.8",
+  "version": "6.0.9",
   "description": "A patch for Next REST Framework to work with Next.JS 15",
   "keywords": [
     "nextjs",

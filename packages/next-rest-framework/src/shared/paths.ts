@@ -282,6 +282,34 @@ export const getPathsFromRoute = ({
         ];
       }
 
+      if (input?.headers) {
+        const schema =
+          input.querySchema ??
+          getJsonSchema({
+            schema: input.headers,
+            operationId,
+            type: 'input-header'
+          }).properties ??
+          {};
+
+        generatedOperationObject.parameters = [
+          ...(generatedOperationObject.parameters ?? []),
+          ...Object.entries(schema).map(([name, schema]) => {
+            const _schema = (input.headers as ZodObject<ZodRawShape>).shape[
+              name
+            ] as ZodSchema;
+
+            // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+            return {
+              name,
+              in: 'header',
+              required: !_schema.isOptional(),
+              schema
+            } as OpenAPIV3_1.ParameterObject;
+          })
+        ];
+      }
+
       paths[route] = {
         ...paths[route],
         [method]: merge(generatedOperationObject, openApiOperation)

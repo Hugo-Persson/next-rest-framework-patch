@@ -31,7 +31,11 @@ export const logGenerateErrorForRoute = (path: string, error: unknown) => {
 Error while importing ${path}, skipping path...`)
   );
 
-  console.error(chalk.red(error));
+  if (error instanceof Error && error.stack) {
+    console.error(chalk.red(error.stack));
+  } else {
+    console.error(chalk.red(error));
+  }
 
   console.info(
     chalk.yellow(
