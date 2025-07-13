@@ -18,7 +18,7 @@ program
     const configPath: string = options.configPath ?? '';
 
     try {
-      console.info(chalk.yellowBright('Generating Hugo OpenAPI spec...'));
+      console.info(chalk.yellowBright('Generating OpenAPI spec...'));
 
       await generate({
         configPath
