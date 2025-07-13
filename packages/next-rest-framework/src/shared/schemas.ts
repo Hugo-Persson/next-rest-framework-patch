@@ -41,7 +41,12 @@ export const validateSchema = ({
   throw Error('Invalid schema.');
 };
 
-type SchemaType = 'input-params' | 'input-query' | 'input-body' | 'output-body';
+type SchemaType =
+  | 'input-params'
+  | 'input-query'
+  | 'input-body'
+  | 'input-header'
+  | 'output-body';
 
 export const getJsonSchema = ({
   schema,
@@ -62,7 +67,9 @@ export const getJsonSchema = ({
       const solutions: Record<SchemaType, string> = {
         'input-params': 'paramsSchema',
         'input-query': 'querySchema',
+        'input-header': 'headersSchema',
         'input-body': 'bodySchema',
+
         'output-body': 'bodySchema'
       };
 

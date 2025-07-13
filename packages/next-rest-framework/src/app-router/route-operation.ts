@@ -14,7 +14,8 @@ import {
   type BaseContentType,
   type ZodFormSchema,
   type FormDataContentType,
-  type ContentTypesThatSupportInputValidation
+  type ContentTypesThatSupportInputValidation,
+  type BaseHeaders
 } from '../types';
 import { NextResponse, type NextRequest } from 'next/server';
 import { type ZodSchema, type z } from 'zod';
@@ -168,6 +169,7 @@ type TypedRouteHandler<
   Body = unknown,
   Query extends BaseQuery = BaseQuery,
   Params extends BaseParams = BaseParams,
+  Headers extends BaseHeaders = BaseHeaders,
   Options extends BaseOptions = BaseOptions,
   ResponseBody = unknown,
   Status extends BaseStatus = BaseStatus,
@@ -185,7 +187,7 @@ type TypedRouteHandler<
     | void
 > = (
   req: TypedNextRequest<Method, ContentType, Body, Query>,
-  context: { params: Params },
+  context: { params: Params; headers: Headers },
   options: Options
 ) => Promise<TypedResponse> | TypedResponse;
 
@@ -193,7 +195,8 @@ interface InputObject<
   ContentType = BaseContentType,
   Body = unknown,
   Query = BaseQuery,
-  Params = BaseParams
+  Params = BaseParams,
+  Headers = BaseHeaders
 > {
   contentType?: ContentType;
   /*! Body schema is supported only for certain content types that support input validation. */
@@ -210,6 +213,7 @@ interface InputObject<
   params?: ZodSchema<Params>;
   /*! If defined, this will override the params schema for the OpenAPI spec. */
   paramsSchema?: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject;
+  headers?: ZodSchema<Headers>;
 }
 
 export interface RouteOperationDefinition<
@@ -246,7 +250,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
     middleware1?: RouteMiddleware<any, any>;
     middleware2?: RouteMiddleware<any, any>;
     middleware3?: RouteMiddleware<any, any>;
-    handler?: TypedRouteHandler<any, any, any, any, any, any>;
+    handler?: TypedRouteHandler<any, any, any, any, any, any, any>;
   }): RouteOperationDefinition<Method> => ({
     openApiOperation,
     method,
@@ -263,9 +267,10 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
       ContentType extends BaseContentType,
       Body,
       Query extends BaseQuery,
-      Params extends BaseParams
+      Params extends BaseParams,
+      Headers extends BaseHeaders
     >(
-      input: InputObject<ContentType, Body, Query, Params>
+      input: InputObject<ContentType, Body, Query, Params, Headers>
     ) => ({
       outputs: <
         ResponseBody,
@@ -314,6 +319,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                   Body,
                   Query,
                   Params,
+                  Headers,
                   Options3,
                   ResponseBody,
                   Status,
@@ -337,6 +343,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                 Body,
                 Query,
                 Params,
+                Headers,
                 Options2,
                 ResponseBody,
                 Status,
@@ -359,6 +366,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
               Body,
               Query,
               Params,
+              Headers,
               Options1,
               ResponseBody,
               Status,
@@ -374,6 +382,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
             Body,
             Query,
             Params,
+            Headers,
             BaseOptions,
             ResponseBody,
             Status,
@@ -408,6 +417,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                   Body,
                   Query,
                   Params,
+                  Headers,
                   Options3,
                   ResponseBody,
                   Status,
@@ -431,6 +441,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                 Body,
                 Query,
                 Params,
+                Headers,
                 Options2
               >
             ) => createOperation({ input, middleware1, middleware2, handler })
@@ -452,6 +463,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                 Body,
                 Query,
                 Params,
+                Headers,
                 Options2,
                 ResponseBody,
                 Status,
@@ -473,6 +485,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
               ContentType,
               Body,
               Query,
+              Headers,
               Params,
               Options2
             >
@@ -495,6 +508,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
               Body,
               Query,
               Params,
+              Headers,
               Options1,
               ResponseBody,
               Status,
@@ -510,6 +524,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
             Body,
             Query,
             Params,
+            Headers,
             Options1
           >
         ) => createOperation({ input, middleware1, handler })
@@ -565,6 +580,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
                 unknown,
                 BaseQuery,
                 BaseParams,
+                BaseHeaders,
                 Options3,
                 ResponseBody,
                 Status,
@@ -587,6 +603,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
               unknown,
               BaseQuery,
               BaseParams,
+              BaseHeaders,
               Options2,
               ResponseBody,
               Status,
@@ -602,6 +619,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
             unknown,
             BaseQuery,
             BaseParams,
+            BaseHeaders,
             Options1,
             ResponseBody,
             Status,
@@ -617,6 +635,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
           unknown,
           BaseQuery,
           BaseParams,
+          BaseHeaders,
           BaseOptions,
           ResponseBody,
           Status,
@@ -641,6 +660,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
               unknown,
               BaseQuery,
               BaseParams,
+              BaseHeaders,
               Options3
             >
           ) =>
@@ -653,6 +673,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
             unknown,
             BaseQuery,
             BaseParams,
+            BaseHeaders,
             Options2
           >
         ) => createOperation({ middleware1, middleware2, handler })
@@ -664,6 +685,7 @@ export const routeOperation = <Method extends keyof typeof ValidMethod>({
           unknown,
           BaseQuery,
           BaseParams,
+          BaseHeaders,
           Options1
         >
       ) => createOperation({ middleware1, handler })

@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter example run dev",
-    "build": "pnpm --filter next-rest-framework run build",
+    "build": "pnpm --filter next-rest-framework-patch-hugo run build",
     "test": "pnpm --filter next-rest-framework run test",
     "test:watch": "pnpm --filter next-rest-framework run test:watch",
     "format": "prettier --write '**/*.{ts,json}' && eslint --fix --max-warnings=0 --ext=.ts .",

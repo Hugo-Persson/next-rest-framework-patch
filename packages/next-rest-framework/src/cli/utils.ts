@@ -428,7 +428,11 @@ export const generateOpenApiSpec = async ({
   };
 
   const components = Object.keys(schemas).length
-    ? { components: { schemas: sortObjectByKeys(schemas) } }
+    ? {
+        components: {
+          schemas: sortObjectByKeys(schemas)
+        }
+      }
     : {};
 
   const spec: OpenAPIV3_1.Document = merge(

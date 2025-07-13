@@ -8,7 +8,8 @@ import {
   type FormDataContentType,
   type BaseOptions,
   type BaseParams,
-  type OpenApiPathItem
+  type OpenApiPathItem,
+  type BaseHeaders
 } from '../types';
 import {
   type RouteOperationDefinition,
@@ -28,7 +29,7 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
 ) => {
   const handler = async (
     _req: NextRequest,
-    context: { params: Promise<BaseParams> }
+    context: { params: Promise<BaseParams>; headers: BaseHeaders }
   ) => {
     try {
       const operation = Object.entries(operations).find(
@@ -48,6 +49,7 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           }
         );
       }
+      context.headers = Object.fromEntries(_req.headers.entries());
 
       const { input, handler, middleware1, middleware2, middleware3 } =
         operation;
@@ -65,7 +67,11 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
       let middlewareOptions: BaseOptions = {};
 
       if (middleware1) {
-        const res = await middleware1(reqClone, {...context, params: await context.params}, middlewareOptions);
+        const res = await middleware1(
+          reqClone,
+          { ...context, params: await context.params },
+          middlewareOptions
+        );
 
         const isOptionsResponse = (res: unknown): res is BaseOptions =>
           typeof res === 'object';
@@ -77,7 +83,11 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
         }
 
         if (middleware2) {
-          const res2 = await middleware2(reqClone, {...context, params: await context.params}, middlewareOptions);
+          const res2 = await middleware2(
+            reqClone,
+            { ...context, params: await context.params },
+            middlewareOptions
+          );
 
           if (res2 instanceof Response) {
             return res2;
@@ -88,7 +98,7 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           if (middleware3) {
             const res3 = await middleware3(
               reqClone,
-              {...context, params: await context.params},
+              { ...context, params: await context.params },
               middlewareOptions
             );
 
@@ -106,7 +116,8 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           body: bodySchema,
           query: querySchema,
           contentType: contentTypeSchema,
-          params: paramsSchema
+          params: paramsSchema,
+          headers: headersSchema
         } = input;
 
         const contentType = reqClone.headers.get('content-type')?.split(';')[0];
@@ -270,11 +281,32 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
 
           context.params = data;
         }
+
+        if (headersSchema) {
+          const { valid, errors, data } = validateSchema({
+            schema: headersSchema,
+            obj: context.headers
+          });
+
+          if (!valid) {
+            return NextResponse.json(
+              {
+                message: DEFAULT_ERRORS.invalidHeaders,
+                errors
+              },
+              {
+                status: 400
+              }
+            );
+          }
+
+          context.headers = data;
+        }
       }
 
       const res = await handler?.(
         reqClone as TypedNextRequest,
-        {...context, params: await context.params},
+        { ...context, params: await context.params },
         middlewareOptions
       );
 
