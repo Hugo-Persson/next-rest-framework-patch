@@ -15,3 +15,4 @@ export {
   TypedNextResponse
 } from './app-router';
 export { rpcOperation } from './shared';
+export type {RouteError, RouteErrorHandler} from './types';

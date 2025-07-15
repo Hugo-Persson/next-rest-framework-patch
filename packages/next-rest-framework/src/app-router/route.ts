@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import qs from 'qs';
 import { DEFAULT_ERRORS } from '../constants';
-import { validateSchema } from '../shared';
+import {  validateSchema } from '../shared';
 import { logNextRestFrameworkError } from '../shared/logging';
 import { getPathsFromRoute } from '../shared/paths';
 import {
@@ -9,7 +9,8 @@ import {
   type BaseOptions,
   type BaseParams,
   type OpenApiPathItem,
-  type BaseHeaders
+  type BaseHeaders,
+  type RouteError
 } from '../types';
 import {
   type RouteOperationDefinition,
@@ -36,6 +37,7 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
         ([_operationId, operation]) => operation.method === _req.method
       )?.[1];
 
+
       if (!operation) {
         return NextResponse.json(
           { message: DEFAULT_ERRORS.methodNotAllowed },
@@ -51,8 +53,9 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
       }
       context.headers = Object.fromEntries(_req.headers.entries());
 
-      const { input, handler, middleware1, middleware2, middleware3 } =
+      const { input, handler, middleware1, middleware2, middleware3, errorHook } =
         operation;
+      console.info("Error hook", errorHook);
 
       const _reqClone = _req.clone() as NextRequest;
 
@@ -123,6 +126,12 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
         const contentType = reqClone.headers.get('content-type')?.split(';')[0];
 
         if (contentTypeSchema && contentType !== contentTypeSchema) {
+          const routeError: RouteError = {
+            route: reqClone.nextUrl.pathname,
+            responseCode: 415,
+            message: DEFAULT_ERRORS.invalidMediaType,
+          };
+          errorHook?.(routeError);
           return NextResponse.json(
             { message: DEFAULT_ERRORS.invalidMediaType },
             { status: 415, headers: { Allow: contentTypeSchema } }
@@ -140,6 +149,13 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
               });
 
               if (!valid) {
+                const routeError: RouteError = {
+                  route: reqClone.nextUrl.pathname,
+                  responseCode: 400,
+                  message: DEFAULT_ERRORS.invalidRequestBody,
+                  zodError: errors,
+                };
+                errorHook?.(routeError);
                 return NextResponse.json(
                   {
                     message: DEFAULT_ERRORS.invalidRequestBody,
@@ -159,6 +175,12 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
 
               reqClone.json = async () => data;
             } catch {
+              const routeError: RouteError = {
+                route: reqClone.nextUrl.pathname,
+                responseCode: 400,
+                message: `${DEFAULT_ERRORS.invalidRequestBody} Failed to parse JSON body.`,
+              };
+              errorHook?.(routeError);
               return NextResponse.json(
                 {
                   message: `${DEFAULT_ERRORS.invalidRequestBody} Failed to parse JSON body.`
@@ -182,6 +204,13 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
               });
 
               if (!valid) {
+                const routeError: RouteError = {
+                  route: reqClone.nextUrl.pathname,
+                  responseCode: 400,
+                  message: DEFAULT_ERRORS.invalidRequestBody,
+                  zodError: errors,
+                };
+                errorHook?.(routeError);
                 return NextResponse.json(
                   {
                     message: DEFAULT_ERRORS.invalidRequestBody,
@@ -211,6 +240,12 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
                 return formData;
               };
             } catch {
+              const routeError: RouteError = {
+                route: reqClone.nextUrl.pathname,
+                responseCode: 400,
+                message: `${DEFAULT_ERRORS.invalidRequestBody} Failed to parse form data.`,
+              };
+              errorHook?.(routeError);
               return NextResponse.json(
                 {
                   message: `${DEFAULT_ERRORS.invalidRequestBody} Failed to parse form data.`
@@ -232,6 +267,13 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           });
 
           if (!valid) {
+            const routeError: RouteError = {
+              route: reqClone.nextUrl.pathname,
+              responseCode: 400,
+              message: DEFAULT_ERRORS.invalidQueryParameters,
+              zodError: errors,
+            };
+            errorHook?.(routeError);
             return NextResponse.json(
               {
                 message: DEFAULT_ERRORS.invalidQueryParameters,
@@ -268,6 +310,13 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           });
 
           if (!valid) {
+            const routeError: RouteError = {
+              route: reqClone.nextUrl.pathname,
+              responseCode: 400,
+              message: DEFAULT_ERRORS.invalidPathParameters,
+              zodError: errors,
+            };
+            errorHook?.(routeError);
             return NextResponse.json(
               {
                 message: DEFAULT_ERRORS.invalidPathParameters,
@@ -289,6 +338,13 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
           });
 
           if (!valid) {
+            const routeError: RouteError = {
+              route: reqClone.nextUrl.pathname,
+              responseCode: 400,
+              message: DEFAULT_ERRORS.invalidHeaders,
+              zodError: errors,
+            };
+            errorHook?.(routeError);
             return NextResponse.json(
               {
                 message: DEFAULT_ERRORS.invalidHeaders,
@@ -311,6 +367,12 @@ export const route = <T extends Record<string, RouteOperationDefinition>>(
       );
 
       if (!res) {
+        const routeError: RouteError = {
+          route: reqClone.nextUrl.pathname,
+          responseCode: 501,
+          message: DEFAULT_ERRORS.notImplemented,
+        };
+        errorHook?.(routeError);
         return NextResponse.json(
           { message: DEFAULT_ERRORS.notImplemented },
           { status: 501 }

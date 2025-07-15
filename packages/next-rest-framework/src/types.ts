@@ -1,5 +1,5 @@
 import { type OpenAPIV3_1 } from 'openapi-types';
-import { type ZodEffects, type z, type ZodSchema } from 'zod';
+import type { ZodEffects, z, ZodSchema, ZodError, ZodIssue } from 'zod';
 
 export type DocsProvider = 'redoc' | 'swagger-ui';
 
@@ -33,6 +33,15 @@ export type OpenApiOperation = Partial<
     | 'servers'
   >
 >;
+export interface RouteError {
+  route: string;
+  message: string;
+  responseCode: number;
+  zodError?: ZodIssue[] | ZodError | null | undefined;
+}
+export type RouteErrorHandler =  (error: RouteError) => void;
+
+
 
 export interface NextRestFrameworkConfig {
   /*!
@@ -73,6 +82,7 @@ export interface NextRestFrameworkConfig {
       imageUrl: string /*! og:image */;
     };
   };
+
 }
 
 export type BaseStatus = number;
